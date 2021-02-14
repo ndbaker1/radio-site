@@ -107,7 +107,7 @@ function listFiles(auth) {
 				files.map((file) => {
 					switch (file.mimeType) {
 						case 'audio/mp3': case 'audio/mpeg':
-							console.log(`{"name": "${file.name}","id": "${file.id}"}`);
+							console.log(`{"name": "${file.name}","id": "${file.id}"},`);
 							break;
 						case 'application/vnd.google-apps.folder':
 							searchInFolderId(file.id);
