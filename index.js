@@ -26,6 +26,9 @@ const SCOPES = ['https://www.googleapis.com/auth/drive.metadata.readonly'];
 // time.
 const TOKEN_PATH = 'token.json';
 
+// call the load
+load()
+
 // Load client secrets from a local file.
 function load() {
 	fs.readFile('credentials.json', (err, content) => {
@@ -104,7 +107,7 @@ function listFiles(auth) {
 				files.map((file) => {
 					switch (file.mimeType) {
 						case 'audio/mp3': case 'audio/mpeg':
-							console.log(`${file.name} (${file.id})`);
+							console.log(`{name: "${file.name}",id: "${file.id}"}`);
 							break;
 						case 'application/vnd.google-apps.folder':
 							searchInFolderId(file.id);
@@ -116,7 +119,7 @@ function listFiles(auth) {
 				console.log('No files found.');
 			}
 		})
-	})(musicFolderId)
+	})(musicFolderId);
 }
 // [END drive_quickstart]
 
