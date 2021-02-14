@@ -18,6 +18,13 @@ let currentSongId = ''
 let currentSongName = ''
 let playbackStartTime = 0
 let songTimeout = null
+
+// helper logging functions
+const log = {
+	songStart: () => console.log('[Started Broadcast] >> ' + currentSongName),
+	skip: () => console.log('[Skipping] >> ' + currentSongName)
+}
+
 const songs = JSON.parse(fs.readFileSync('./songlist.json', { encoding: 'utf-8' }))
 
 function playSong(songIndex) {
@@ -55,8 +62,3 @@ app.listen(port, () => {
 	console.log(`Example app listening at http://localhost:${port}`)
 })
 
-// helper logging functions
-const log = {
-	songStart: () => console.log('[Started Broadcast] >> ' + currentSongName),
-	skip: () => console.log('[Skipping] >> ' + currentSongName)
-}
