@@ -17,7 +17,7 @@
 // [START drive_quickstart]
 const fs = require('fs');
 const readline = require('readline');
-const {google} = require('googleapis');
+const { google } = require('googleapis');
 
 // If modifying these scopes, delete token.json.
 const SCOPES = ['https://www.googleapis.com/auth/drive.metadata.readonly'];
@@ -45,7 +45,7 @@ function load() {
  * @param {function} callback The callback to call with the authorized client.
  */
 function authorize(credentials, callback) {
-	const {client_secret, client_id, redirect_uris} = credentials.installed;
+	const { client_secret, client_id, redirect_uris } = credentials.installed;
 	const oAuth2Client = new google.auth.OAuth2(
 		client_id, client_secret, redirect_uris[0]);
 
@@ -94,7 +94,7 @@ function getAccessToken(oAuth2Client, callback) {
  */
 function listFiles(auth) {
 	const musicFolderId = '1b-XGud770YVjXsdU9UF5SaphxCmOUNYg'
-	const drive = google.drive({version: 'v3', auth});
+	const drive = google.drive({ version: 'v3', auth });
 	(function searchInFolderId(folderId) {
 		drive.files.list({
 			pageSize: 1000,
@@ -128,3 +128,5 @@ module.exports = {
 	listFiles,
 	load,
 };
+
+// when outputting to json you will want to run the entire echo [ > songlist.json && sudo node index.js >> songlist.json && echo ] >> songlist.json
