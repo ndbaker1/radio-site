@@ -1,18 +1,17 @@
-const gdriveSource = (gdriveId) => "https://docs.google.com/uc?export=download&id=" + gdriveId
+const { gdriveSource } = require('./utils')
 
 const audioPlayer = document.getElementById("player")
-audioPlayer.volume = 0.1
 const audioPlayerSource = document.getElementById("player-source")
 const syncButton = document.getElementById("sync-button")
 const skipButton = document.getElementById("skip-button")
-
+// default values for audio player
+audioPlayer.volume = 0.1
 
 // refresh with the latest track when the song ends
 audioPlayer.onended = sync
 // manually skip to the latest track
 syncButton.onclick = sync
 skipButton.onclick = skip
-
 
 // sync the player after checking with the server
 function sync() {

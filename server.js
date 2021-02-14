@@ -3,15 +3,11 @@ const app = express()
 const port = 8000
 const fs = require('fs')
 const path = require('path')
+const { gdriveSource } = require('./utils')
 
 // soruce serving routes
-app.get('/', (req, res) => {
-	res.sendFile(path.join(__dirname + '/index.html'))
-})
-
-app.get('/app.js', (req, res) => {
-	res.sendFile(path.join(__dirname + '/app.js'))
-})
+app.get('/', (req, res) => res.sendFile(path.join(__dirname + '/index.html')))
+app.get('/app.js', (req, res) => res.sendFile(path.join(__dirname + '/app.js')))
 
 // api routes
 let currentSongId = ''
@@ -40,7 +36,6 @@ function playSong(songIndex) {
 		playSong(Math.round(Math.random() * songs.length))
 	}, songDuration)
 }
-playSong(Math.round(Math.random() * songs.length))
 
 app.get('/song', (req, res) => {
 	// convert from milliseconds to seconds
@@ -56,10 +51,13 @@ app.get('/skip', (req, res) => {
 	clearTimeout(songTimeout)
 	log.skip()
 	playSong(Math.round(Math.random() * songs.length))
-	res.send({ skipped: true })
+	res.send()
 })
 
+
+// start server
 app.listen(port, () => {
 	console.log(`Example app listening at http://localhost:${port}`)
+	playSong(Math.round(Math.random() * songs.length))
 })
 
