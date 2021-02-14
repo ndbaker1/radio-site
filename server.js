@@ -24,6 +24,7 @@ function playSong(songIndex) {
 	// read file and get duration
 	currentSongId = songs[songIndex].id
 	currentSongName = songs[songIndex].name
+	console.log('broadcasting song: ' + currentSongName)
 	// read song from url
 	const songDuration = 200 * 1000
 	// reset playback start time
