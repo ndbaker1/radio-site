@@ -56,6 +56,7 @@ app.get('/skip', (req, res) => {
 	clearTimeout(songTimeout)
 	log.skip()
 	playSong(Math.round(Math.random() * songs.length))
+	res.send({ skipped: true })
 })
 
 app.listen(port, () => {
