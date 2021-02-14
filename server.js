@@ -17,19 +17,19 @@ app.get('/app.js', (req, res) => {
 let currentSongId = ''
 let currentSongName = ''
 let playbackStartTime = 0
-let playCallback = null
+let songTimeout = null
 const songs = JSON.parse(fs.readFileSync('./songlist.json', { encoding: 'utf-8' }))
 
 function playSong(songIndex) {
 	// read file and get duration
 	currentSongId = songs[songIndex].id
 	currentSongName = songs[songIndex].name
-	console.log('broadcasting song: ' + currentSongName)
+	log.songStart()
 	// read song from url
 	const songDuration = 20 * 1000
 	// reset playback start time
 	playbackStartTime = Date.now()
-	playCallback = setTimeout(() => {
+	songTimeout = setTimeout(() => {
 		playSong(Math.round(Math.random() * songs.length))
 	}, songDuration)
 }
@@ -45,6 +45,18 @@ app.get('/song', (req, res) => {
 	})
 })
 
+app.get('/skip', (req, res) => {
+	clearTimeout(songTimeout)
+	log.skip()
+	playSong(Math.round(Math.random() * songs.length))
+})
+
 app.listen(port, () => {
 	console.log(`Example app listening at http://localhost:${port}`)
 })
+
+// helper logging functions
+const log = {
+	songStart: () => console.log('[Started Broadcast] >> ' + currentSongName),
+	skip: () => console.log('[Skipping] >> ' + currentSongName)
+}

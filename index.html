@@ -11,7 +11,8 @@
 			background: linear-gradient(#3a4aff, rgb(62, 0, 143));
 		}
 
-		#sync-button {
+		button {
+			/* #sync-button { */
 			width: 60px;
 			height: 30px;
 			cursor: pointer;
@@ -32,12 +33,13 @@
 
 <body>
 	<div class="ui-container">
-		<audio id="player" controls>
+		<audio id="player" controls volume=0.1>
 			<source id="player-source">
 			</source>
 			Your browser does not support the audio element.
 		</audio>
 		<button id="sync-button">Sync</button>
+		<button id="skip-button">Skip</button>
 	</div>
 	<script src="/app.js"></script>
 </body>

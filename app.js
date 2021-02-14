@@ -3,6 +3,15 @@ const gdriveSource = (gdriveId) => "https://docs.google.com/uc?export=download&i
 const audioPlayer = document.getElementById("player")
 const audioPlayerSource = document.getElementById("player-source")
 const syncButton = document.getElementById("sync-button")
+const skipButton = document.getElementById("skip-button")
+
+
+// refresh with the latest track when the song ends
+audioPlayer.onended = sync
+// manually skip to the latest track
+syncButton.onclick = sync
+syncButton.onclick = skip
+
 
 // sync the player after checking with the server
 function sync() {
@@ -18,7 +27,8 @@ function sync() {
     })
 }
 
-// refresh with the latest track when the song ends
-audioPlayer.onended = sync
-// manually skip to the latest track
-syncButton.onclick = sync
+// tell the server to skip the song
+function skip() {
+  fetch('/skip')
+  sync()
+}
