@@ -3,7 +3,7 @@ const app = express()
 const port = 8000
 const fs = require('fs')
 const path = require('path')
-const { gdriveSource } = require('./utils')
+const gdriveSource = (gdriveId) => "https://docs.google.com/uc?export=download&id=" + gdriveId
 
 // soruce serving routes
 app.get('/', (req, res) => res.sendFile(path.join(__dirname + '/index.html')))

@@ -1,4 +1,4 @@
-const { gdriveSource } = require('./utils')
+const gdriveSource = (gdriveId) => "https://docs.google.com/uc?export=download&id=" + gdriveId
 
 const audioPlayer = document.getElementById("player")
 const audioPlayerSource = document.getElementById("player-source")
