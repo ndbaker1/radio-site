@@ -26,7 +26,7 @@ function playSong(songIndex) {
 	currentSongName = songs[songIndex].name
 	console.log('broadcasting song: ' + currentSongName)
 	// read song from url
-	const songDuration = 200 * 1000
+	const songDuration = 20 * 1000
 	// reset playback start time
 	playbackStartTime = Date.now()
 	playCallback = setTimeout(() => {
