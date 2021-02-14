@@ -1,6 +1,7 @@
 const gdriveSource = (gdriveId) => "https://docs.google.com/uc?export=download&id=" + gdriveId
 
 const audioPlayer = document.getElementById("player")
+audioPlayer.volume = 0.1
 const audioPlayerSource = document.getElementById("player-source")
 const syncButton = document.getElementById("sync-button")
 const skipButton = document.getElementById("skip-button")
@@ -29,6 +30,6 @@ function sync() {
 
 // tell the server to skip the song
 function skip() {
-  fetch('/skip')
+  fetch('/skip').finally()
   sync()
 }
