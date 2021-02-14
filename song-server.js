@@ -23,7 +23,7 @@ app.get('/id', (req, res) => {
 
 app.get('/time', (req, res) => {
 	// convert from milliseconds to seconds
-	const songPosition = (Date.now() - playbackStartTime) / 1000 
+	const songPosition = (Date.now() - playbackStartTime) / 1000
 	res.send({ currentTime: songPosition })
 })
 

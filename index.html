@@ -1,31 +1,43 @@
 <head>
-
 	<title>Music Radio</title>
-</head>
-<body>
-	<audio id="player" controls loop autoplay>
-		<source id="player-source"></source>
-		Your browser does not support the audio element.
-	</audio>
-	<button id="sync-button">Play Live</button>
-	<script>
-		function gdriveSource(gdriveId) {
-			return "https://docs.google.com/uc?export=download&id=" + gdriveId
+	<style>
+		* {
+			font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
 		}
 
-		const audioPlayer = document.getElementById("player")
-		const audioPlayerSource = document.getElementById("player-source")	
-		const syncButton = document.getElementById("sync-button")
-		syncButton.addEventListener('click', () => fetch('/song')
-			.then(data => data.json())
-			.then(res => {
-				// load source and reload URIs
-				audioPlayerSource.src = gdriveSource(res.id)
-				audioPlayer.load()
-				// set the player Timestamp and start
-				audioPlayer.currentTime = res.currentTime
-				audioPlayer.play()
-			})
-		)
-	</script>
+		body {
+			display: flex;
+			overflow: hidden;
+			background: linear-gradient(#3a4aff, rgb(62, 0, 143));
+		}
+
+		#sync-button {
+			width: 60px;
+			height: 30px;
+			cursor: pointer;
+			text-align: center;
+			vertical-align: middle;
+			background-color: white;
+			margin: auto;
+			margin-top: 20px;
+		}
+
+		.ui-container {
+			display: flex;
+			flex-direction: column;
+			margin: auto;
+		}
+	</style>
+</head>
+
+<body>
+	<div class="ui-container">
+		<audio id="player" controls>
+			<source id="player-source">
+			</source>
+			Your browser does not support the audio element.
+		</audio>
+		<div id="sync-button">Sync</div>
+	</div>
+	<script src="/app.js"></script>
 </body>
