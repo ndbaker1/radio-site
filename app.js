@@ -30,6 +30,5 @@ function sync() {
 
 // tell the server to skip the song
 function skip() {
-  fetch('/skip').finally()
-  sync()
+  fetch('/skip').then(() => sync())
 }
