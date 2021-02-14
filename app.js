@@ -11,7 +11,7 @@ const skipButton = document.getElementById("skip-button")
 audioPlayer.onended = sync
 // manually skip to the latest track
 syncButton.onclick = sync
-syncButton.onclick = skip
+skipButton.onclick = skip
 
 
 // sync the player after checking with the server
