@@ -1,5 +1,6 @@
 const gdriveSource = (gdriveId) => "https://docs.google.com/uc?export=download&id=" + gdriveId
 
+const titleElement = document.getElementById("song-title")
 const audioPlayer = document.getElementById("player")
 const audioPlayerSource = document.getElementById("player-source")
 const syncButton = document.getElementById("sync-button")
@@ -24,6 +25,8 @@ function sync() {
       // set the player Timestamp and start
       audioPlayer.currentTime = res.currentTime
       audioPlayer.play()
+      // set title
+      titleElement.innerHTML = res.name
     })
 }
 
