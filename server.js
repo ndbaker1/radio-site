@@ -1,6 +1,8 @@
 const fs = require('fs')
 const express = require('express')
 const app = express()
+const localtunnel = require('localtunnel')
+const subdomain = 'ramensongs'
 const port = 8000
 
 // soruce serving routes
@@ -54,8 +56,9 @@ app.get('/skip', (req, res) => {
 
 
 // start server
-app.listen(port, () => {
-	console.log(`Example app listening at http://localhost:${port}`)
+app.listen(port, async () => {
+	console.log(`Song Server listening on http://localhost:${port}`)
+	const tunnel = await localtunnel({port, subdomain})
+	console.log(`Public tunnel setup at ${tunnel.url}\n`)
 	playSong(Math.round(Math.random() * songs.length))
 })
-
