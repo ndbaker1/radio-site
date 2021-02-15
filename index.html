@@ -18,7 +18,7 @@
 			text-align: center;
 			vertical-align: middle;
 			background-color: white;
-			margin-top: 20px;
+			margin: auto;
 		}
 
 		.ui-container {
@@ -29,6 +29,13 @@
 
 		.ui-container>* {
 			margin: auto;
+		}
+
+		.button-container {
+			padding: 20px;
+			display: flex;
+			flex-direction: row;
+			justify-content: space-evenly;
 		}
 	</style>
 </head>
@@ -41,8 +48,10 @@
 			</source>
 			Your browser does not support the audio element.
 		</audio>
-		<button id="sync-button">Sync</button>
-		<button id="skip-button">Skip</button>
+		<div class="button-container">
+			<button id="sync-button">Sync</button>
+			<button id="skip-button">Skip</button>
+		</div>
 	</div>
 	<script src="/app.js"></script>
 </body>
