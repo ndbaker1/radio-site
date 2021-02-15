@@ -1,13 +1,10 @@
+const fs = require('fs')
 const express = require('express')
 const app = express()
 const port = 8000
-const fs = require('fs')
-const path = require('path')
-const gdriveSource = (gdriveId) => "https://docs.google.com/uc?export=download&id=" + gdriveId
 
 // soruce serving routes
-app.get('/', (req, res) => res.sendFile(path.join(__dirname + '/index.html')))
-app.get('/app.js', (req, res) => res.sendFile(path.join(__dirname + '/app.js')))
+app.use(express.static('public'))
 
 // api routes
 let currentSongId = ''
@@ -20,6 +17,7 @@ const log = {
 	songStart: () => console.log('[Started Broadcast] >> ' + currentSongName),
 	skip: () => console.log('[Skipping] >> ' + currentSongName)
 }
+const gdriveSource = (gdriveId) => "https://docs.google.com/uc?export=download&id=" + gdriveId
 
 const songs = JSON.parse(fs.readFileSync('./songlist.json', { encoding: 'utf-8' }))
 

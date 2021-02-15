@@ -129,4 +129,4 @@ module.exports = {
 	load,
 };
 
-// when outputting to json you will want to run the entire echo [ > songlist.json && sudo node index.js >> songlist.json && echo ] >> songlist.json
+// when outputting to json you will want to run the entire echo [ > songlist.json && sudo node loader.js >> songlist.json && echo ] >> songlist.json
