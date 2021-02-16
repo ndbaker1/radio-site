@@ -1,0 +1,11 @@
+$color1: #1a1a2e;
+$color2: #3a4aff;
+$color3: rgb(62, 0, 143);
+$textColor: #fff;
+
+:export {
+  color1: $color1;
+  color2: $color2;
+  color3: $color3;
+  textColor: $textColor;
+}
