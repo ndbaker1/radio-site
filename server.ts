@@ -24,20 +24,17 @@ let currentSongName = ''
 let playbackStartTime = 0
 let songTimeout: NodeJS.Timeout
 
-// helper logging functions
-const log = {
-	songStart: () => console.log('[Playing] >> ' + currentSongName),
-	skip: () => console.log('[Skipping]')
-}
-
 const songs: Array<{ id: string, name: string }> = JSON.parse(readFileSync(songlistPath, { encoding: 'utf-8' }))
 
 function playSong() {
+	console.log('[Playing]', currentSongName)
+
 	const songIndex = Math.round(Math.random() * (songs.length - 1))
 	// read file and get duration
 	currentSongId = songs[songIndex].id
-	currentSongName = songs[songIndex].name.substring(0, songs[songIndex].name.lastIndexOf('.')) // remove extension name
-	log.songStart()
+	currentSongName = songs[songIndex].name
+		// remove extension name
+		.substring(0, songs[songIndex].name.lastIndexOf('.'))
 	// read song from url
 	const songDuration = 20 * 1000 // THIS NEEDS TO BE UPDATES TO REFLECT THE DURATION OF THE SONG
 	// reset playback start time
@@ -59,8 +56,9 @@ app.get('/song', (req, res) => {
 })
 
 app.get('/skip', (req, res) => {
+	console.log('[Skipping]')
+
 	clearTimeout(songTimeout)
-	log.skip()
 	playSong()
 	res.send()
 })

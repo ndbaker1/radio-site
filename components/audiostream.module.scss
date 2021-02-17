@@ -8,8 +8,13 @@
 }
 
 .button_container {
-  padding: 20px;
+  padding: 10px;
   display: flex;
   flex-direction: row;
   justify-content: space-evenly;
+}
+
+.song_title {
+  color: white;
+  padding: 20px;
 }

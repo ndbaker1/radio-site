@@ -65,11 +65,11 @@ export default class AudioStream extends Component<unknown, SyncingStreamState> 
         <Slide in={true} timeout={600} direction='up'>
           <div className={styles.ui_container}>
             <div className={styles.ui_container}>
-              <Fade in={!this.state.loading} timeout={500}>
-                <h4 style={{ color: "white" }}>{this.state.currentSongName}</h4>
-              </Fade>
               <Fade in={this.state.loading} timeout={500}>
                 <img src='/loading-logo.svg' width="64" height="64" />
+              </Fade>
+              <Fade in={!this.state.loading} timeout={500}>
+                <h4 className={styles.song_title}>{this.state.currentSongName}</h4>
               </Fade>
             </div>
             <div>
