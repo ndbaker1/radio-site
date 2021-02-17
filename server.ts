@@ -5,7 +5,7 @@ import { readFileSync } from 'fs'
 /**
  * CONFIGURATIONS
  */
-const subdomain = 'ramensongs'
+const subdomain = process.argv[2] || 'ramensongs'
 const port = 8000
 const songlistPath = './songlist.json'
 
@@ -24,26 +24,21 @@ let currentSongName = ''
 let playbackStartTime = 0
 let songTimeout: NodeJS.Timeout
 
-// helper logging functions
-const log = {
-	songStart: () => console.log('[Started Broadcast] >> ' + currentSongName),
-	skip: () => console.log('[Skipping] >> ' + currentSongName)
-}
+const songs: Array<{ id: string, name: string }> = JSON.parse(readFileSync(songlistPath, { encoding: 'utf-8' }))
 
-const songs = JSON.parse(readFileSync(songlistPath, { encoding: 'utf-8' }))
-
-function playSong(songIndex: number) {
+function playSong() {
+	const songIndex = Math.round(Math.random() * (songs.length - 1))
 	// read file and get duration
 	currentSongId = songs[songIndex].id
 	currentSongName = songs[songIndex].name
-	log.songStart()
+		// remove extension name
+		.substring(0, songs[songIndex].name.lastIndexOf('.'))
 	// read song from url
-	const songDuration = 20 * 1000
+	const songDuration = 20 * 1000 // THIS NEEDS TO BE UPDATES TO REFLECT THE DURATION OF THE SONG
 	// reset playback start time
 	playbackStartTime = Date.now()
-	songTimeout = setTimeout(() => {
-		playSong(Math.round(Math.random() * songs.length))
-	}, songDuration)
+	songTimeout = setTimeout(playSong, songDuration)
+	console.log('[Playing]', currentSongName)
 }
 
 /**
@@ -60,9 +55,9 @@ app.get('/song', (req, res) => {
 })
 
 app.get('/skip', (req, res) => {
+	console.log('[Skipping]')
 	clearTimeout(songTimeout)
-	log.skip()
-	playSong(Math.round(Math.random() * songs.length))
+	playSong()
 	res.send()
 })
 
@@ -73,5 +68,5 @@ app.listen(port, async () => {
 	console.log(`Song Server listening on http://localhost:${port}`)
 	const tunnel = await localtunnel({ port, subdomain })
 	console.log(`Public tunnel setup at ${tunnel.url}\n`)
-	playSong(Math.round(Math.random() * songs.length))
+	playSong()
 })

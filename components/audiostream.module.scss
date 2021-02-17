@@ -1,0 +1,20 @@
+.ui_container {
+  display: flex;
+  flex-direction: column;
+  margin: auto;
+  > * {
+    margin: auto;
+  }
+}
+
+.button_container {
+  padding: 10px;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-evenly;
+}
+
+.song_title {
+  color: white;
+  padding: 20px;
+}
