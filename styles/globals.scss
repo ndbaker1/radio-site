@@ -10,27 +10,10 @@ body {
   padding: 0;
   margin: 0;
   overflow: hidden;
-  background: linear-gradient(#3a4aff, rgb(62, 0, 143));
+  background: linear-gradient($color2, $color3);
 }
 
 main {
   display: flex;
   height: 100vh;
-}
-
-.ui-container {
-  display: flex;
-  flex-direction: column;
-  margin: auto;
-}
-
-.ui-container > * {
-  margin: auto;
-}
-
-.button-container {
-  padding: 20px;
-  display: flex;
-  flex-direction: row;
-  justify-content: space-evenly;
 }
