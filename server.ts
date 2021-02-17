@@ -27,8 +27,6 @@ let songTimeout: NodeJS.Timeout
 const songs: Array<{ id: string, name: string }> = JSON.parse(readFileSync(songlistPath, { encoding: 'utf-8' }))
 
 function playSong() {
-	console.log('[Playing]', currentSongName)
-
 	const songIndex = Math.round(Math.random() * (songs.length - 1))
 	// read file and get duration
 	currentSongId = songs[songIndex].id
@@ -40,6 +38,7 @@ function playSong() {
 	// reset playback start time
 	playbackStartTime = Date.now()
 	songTimeout = setTimeout(playSong, songDuration)
+	console.log('[Playing]', currentSongName)
 }
 
 /**
@@ -57,7 +56,6 @@ app.get('/song', (req, res) => {
 
 app.get('/skip', (req, res) => {
 	console.log('[Skipping]')
-
 	clearTimeout(songTimeout)
 	playSong()
 	res.send()
