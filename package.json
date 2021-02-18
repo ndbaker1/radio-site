@@ -4,7 +4,9 @@
 	"description": "",
 	"scripts": {
 		"build": "next build && next export -o out",
-		"start": "ts-node --project tsconfig.server.json server.ts"
+		"start": "ts-node --project tsconfig.server.json server.ts",
+		"compile-server": "tsc --project tsconfig.server.json",
+		"package": "npm install && npm run build && npm run compile-server && sh package.sh"
 	},
 	"author": "Nicholas Baker",
 	"license": "MIT",
