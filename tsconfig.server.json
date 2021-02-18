@@ -3,9 +3,12 @@
     "strict": true,
     "noImplicitAny": true,
     "preserveConstEnums": true,
-    "sourceMap": true,
+    "sourceMap": false,
     "allowJs": true,
     "skipLibCheck": true,
     "esModuleInterop": true,
   },
+  "include": [
+    "server.ts"
+  ],
 }
