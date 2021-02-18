@@ -24,7 +24,7 @@ npm run build
 npm run start SUBDOMAIN
 ```
 
-#### Know Problems:
+#### Known Issues:
 > if the `sharp` module is missing from the require stack then first attempt installing it with `npm i sharp`. if not successfully, then diagnose the errors based on your OS and configurations.
 
     npm ERR! gyp info spawn args [ 'BUILDTYPE=Release', '-C', 'build' ]
