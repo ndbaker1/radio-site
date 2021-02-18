@@ -93,7 +93,9 @@ function getAccessToken(oAuth2Client, callback) {
  * @param {google.auth.OAuth2} auth An authorized OAuth2 client.
  */
 function listFiles(auth) {
+	// root folderId containing all music files
 	const musicFolderId = '1b-XGud770YVjXsdU9UF5SaphxCmOUNYg'
+
 	const drive = google.drive({ version: 'v3', auth });
 	(function searchInFolderId(folderId) {
 		drive.files.list({

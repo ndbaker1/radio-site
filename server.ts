@@ -5,7 +5,7 @@ import { readFileSync } from 'fs'
 /**
  * CONFIGURATIONS
  */
-const subdomain = process.argv[2] || 'ramensongs'
+const subdomain = process.argv[2] || 'music-radio'
 const port = 8000
 const songlistPath = './songlist.json'
 

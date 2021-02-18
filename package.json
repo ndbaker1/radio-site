@@ -3,8 +3,8 @@
 	"version": "1.0.0",
 	"description": "",
 	"scripts": {
-		"build": "next build && next export -o out",
 		"start": "ts-node --project tsconfig.server.json server.ts",
+		"build": "next build && next export -o out",
 		"compile-server": "tsc --project tsconfig.server.json",
 		"package": "npm install && npm run build && npm run compile-server && sh package.sh"
 	},
