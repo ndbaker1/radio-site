@@ -1,6 +1,6 @@
 import express from 'express'
 import localtunnel from 'localtunnel'
-import { readFileSync } from 'fs'
+import { GoogleDriveMusicPlayer } from './utils/musicAdapter'
 
 /**
  * CONFIGURATIONS
@@ -17,48 +17,19 @@ const app = express()
 app.use(express.static('out'))
 
 /**
- * Song Managment Setup
+ * Song Managment
  */
-let currentSongId = ''
-let currentSongName = ''
-let playbackStartTime = 0
-let songTimeout: NodeJS.Timeout
-
-const songs: Array<{ id: string, name: string }> = JSON.parse(readFileSync(songlistPath, { encoding: 'utf-8' }))
-
-function playSong() {
-	const songIndex = Math.round(Math.random() * (songs.length - 1))
-	// read file and get duration
-	currentSongId = songs[songIndex].id
-	currentSongName = songs[songIndex].name
-		// remove extension name
-		.substring(0, songs[songIndex].name.lastIndexOf('.'))
-	// read song from url
-	const songDuration = 20 * 1000 // TODO  - THIS NEEDS TO BE UPDATES TO REFLECT THE DURATION OF THE SONG
-	// reset playback start time
-	playbackStartTime = Date.now()
-	songTimeout = setTimeout(playSong, songDuration)
-	console.log('[Playing]', currentSongName)
-}
+const musicPlayer = new GoogleDriveMusicPlayer(songlistPath)
 
 /**
  *  API Routes
  */
 app.get('/song', (req, res) => {
-	// convert from milliseconds to seconds
-	const songPosition = (Date.now() - playbackStartTime) / 1000
-	res.send({
-		name: currentSongName,
-		id: currentSongId,
-		currentTime: songPosition
-	})
+	res.send(musicPlayer.getState())
 })
 
 app.get('/skip', (req, res) => {
-	console.log('[Skipping]')
-	clearTimeout(songTimeout)
-	playSong()
-	res.send()
+	res.send(musicPlayer.skipSong())
 })
 
 /**
@@ -66,11 +37,13 @@ app.get('/skip', (req, res) => {
  */
 let tunnel: localtunnel.Tunnel
 
-const server = app.listen(port, async () => {
+const server = app.listen(port, () => {
 	console.log(`Song Server listening on http://localhost:${port}`)
-	tunnel = await localtunnel({ port, subdomain })
-	console.log(`Public tunnel setup at ${tunnel.url}\n`)
-	playSong()
+	localtunnel({ port, subdomain }).then((activeTunnel) => {
+		tunnel = activeTunnel
+		console.log(`Public tunnel setup at ${tunnel.url}\n`)
+		musicPlayer.playSong()
+	})
 })
 
 /**
@@ -80,8 +53,10 @@ process.on('SIGINT', shutdown)
 process.on('SIGTERM', shutdown)
 
 function shutdown() {
-	console.log('Shutting down localtunnel...')
+	console.log('\nShutting down localtunnel...')
 	tunnel.close()
 	console.log('Shutting down express...')
 	server.close()
+	console.log('Cleaning up music player resouces...')
+	musicPlayer.cleanup()
 }
