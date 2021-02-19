@@ -1,6 +1,6 @@
 import express from 'express'
 import localtunnel from 'localtunnel'
-import { GoogleDriveMusicPlayer } from './utils/musicAdapter'
+import { GoogleDriveMusicPlayer } from './utils/music.adapter'
 
 /**
  * CONFIGURATIONS
