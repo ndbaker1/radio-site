@@ -1,17 +1,27 @@
 import { Button, Fade, Slide } from "@material-ui/core"
 import { Component, createRef, RefObject } from "react"
-import gdriveIdLink from "../utils/gdriveIdLink"
+import { MusicState } from "../utils/music.adapter"
 import styles from './audiostream.module.scss'
+import io from 'socket.io-client'
 
 export default class AudioStream extends Component<unknown, SyncingStreamState> {
   private audioPlayer: RefObject<HTMLAudioElement> = createRef()
   private audioPlayerSource: RefObject<HTMLSourceElement> = createRef()
+  private socket!: SocketIOClient.Socket
   constructor(props: unknown, private firstload = true) {
     super(props)
     this.state = new SyncingStreamState
+    this.setupServerConnection()
     // function bindings
     this.sync = this.sync.bind(this)
     this.skip = this.skip.bind(this)
+  }
+
+  setupServerConnection() {
+    this.socket = io('http://localhost:8000', { reconnectionDelayMax: 10000 })
+    this.socket.on('music-state', (state: MusicState) => {
+      this.sync()
+    })
   }
 
   /**
@@ -20,10 +30,10 @@ export default class AudioStream extends Component<unknown, SyncingStreamState> 
   sync() {
     fetch('/song')
       .then(data => data.json())
-      .then((res: SongServerResponse) => {
+      .then((res: MusicState) => {
         if (this.audioPlayerSource.current && this.audioPlayer.current) {
           // load source and reload URLs
-          this.audioPlayerSource.current.src = gdriveIdLink(res.id)
+          this.audioPlayerSource.current.src = res.url
           this.audioPlayer.current.load()
           // tell state is loading
           this.setState({ loading: true })
@@ -106,10 +116,4 @@ class SyncingStreamState {
   currentSongName: string = ''
   focused: boolean = false
   loading: boolean = false
-}
-
-type SongServerResponse = {
-  id: string
-  currentTime: number
-  name: string
 }

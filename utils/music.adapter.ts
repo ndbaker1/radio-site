@@ -1,7 +1,8 @@
 import { readFileSync } from "fs"
+import gdriveIdLink from "./gdriveIdLink"
 
 class MusicAdapter {
-  songId!: string
+  songUrl!: string
   songName!: string
   songTimeout!: NodeJS.Timeout
   playbackStartTime = 0
@@ -20,16 +21,15 @@ type SongEntry = {
   id: string
 }
 
-type MusicState = {
+export type MusicState = {
   name: string
-  id: string
   currentTime: number
+  url: string
 }
 
 export class GoogleDriveMusicPlayer extends MusicAdapter implements MusicPlayer {
   private songs: Array<SongEntry>
-
-  constructor(songlistPath: string) {
+  constructor(songlistPath: string, public playSongCallback?: (state: MusicState) => void) {
     super()
     this.songs = JSON.parse(
       readFileSync(songlistPath, { encoding: 'utf-8' })
@@ -39,7 +39,7 @@ export class GoogleDriveMusicPlayer extends MusicAdapter implements MusicPlayer 
   playSong(): void {
     const songIndex = Math.round(Math.random() * (this.songs.length - 1))
     // read file and get duration
-    this.songId = this.songs[songIndex].id
+    this.songUrl = gdriveIdLink(this.songs[songIndex].id)
     this.songName = this.songs[songIndex].name
       // remove extension name
       .substring(0, this.songs[songIndex].name.lastIndexOf('.'))
@@ -49,6 +49,9 @@ export class GoogleDriveMusicPlayer extends MusicAdapter implements MusicPlayer 
     this.playbackStartTime = Date.now()
     this.songTimeout = setTimeout(() => this.playSong(), songDuration)
     console.log('[Playing]', this.songName)
+    // run callback
+    if (this.playSongCallback)
+      this.playSongCallback(this.getState())
   }
 
   skipSong(): void {
@@ -60,7 +63,7 @@ export class GoogleDriveMusicPlayer extends MusicAdapter implements MusicPlayer 
   getState(): MusicState {
     return {
       name: this.songName,
-      id: this.songId,
+      url: this.songUrl,
       currentTime: this.songPosition()
     }
   }
