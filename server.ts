@@ -34,7 +34,7 @@ function playSong() {
 		// remove extension name
 		.substring(0, songs[songIndex].name.lastIndexOf('.'))
 	// read song from url
-	const songDuration = 20 * 1000 // THIS NEEDS TO BE UPDATES TO REFLECT THE DURATION OF THE SONG
+	const songDuration = 20 * 1000 // TODO  - THIS NEEDS TO BE UPDATES TO REFLECT THE DURATION OF THE SONG
 	// reset playback start time
 	playbackStartTime = Date.now()
 	songTimeout = setTimeout(playSong, songDuration)
@@ -64,9 +64,23 @@ app.get('/skip', (req, res) => {
 /**
  * Express Server Start
  */
-app.listen(port, async () => {
+let tunnel: localtunnel.Tunnel
+const server = app.listen(port, async () => {
 	console.log(`Song Server listening on http://localhost:${port}`)
-	const tunnel = await localtunnel({ port, subdomain })
+	tunnel = await localtunnel({ port, subdomain })
 	console.log(`Public tunnel setup at ${tunnel.url}\n`)
 	playSong()
 })
+
+/**
+ * Gracefully handle shutdown
+ */
+process.on('SIGINT', shutdown)
+process.on('SIGTERM', shutdown)
+
+function shutdown() {
+	console.log('Shutting down localtunnel...')
+	tunnel.close()
+	console.log('Shutting down express...')
+	server.close()
+}
