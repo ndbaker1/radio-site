@@ -65,6 +65,7 @@ app.get('/skip', (req, res) => {
  * Express Server Start
  */
 let tunnel: localtunnel.Tunnel
+
 const server = app.listen(port, async () => {
 	console.log(`Song Server listening on http://localhost:${port}`)
 	tunnel = await localtunnel({ port, subdomain })

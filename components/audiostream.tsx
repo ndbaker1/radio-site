@@ -6,7 +6,7 @@ import styles from './audiostream.module.scss'
 export default class AudioStream extends Component<unknown, SyncingStreamState> {
   private audioPlayer: RefObject<HTMLAudioElement> = createRef()
   private audioPlayerSource: RefObject<HTMLSourceElement> = createRef()
-  constructor(props: unknown) {
+  constructor(props: unknown, private firstload = true) {
     super(props)
     this.state = new SyncingStreamState
     // function bindings
@@ -34,6 +34,11 @@ export default class AudioStream extends Component<unknown, SyncingStreamState> 
             this.setState({ currentSongName: res.name })
             // set the player Timestamp and start
             if (this.audioPlayer.current) {
+              // set volume low on first load
+              if (this.firstload) {
+                this.setAudioVolume(0.1)
+                this.firstload = false
+              }
               // set the timestamp the same as the response and play
               this.audioPlayer.current.currentTime = res.currentTime
               this.audioPlayer.current.play()
@@ -74,10 +79,9 @@ export default class AudioStream extends Component<unknown, SyncingStreamState> 
             </div>
             <div>
               <audio controls ref={this.audioPlayer} onEnded={this.sync}>
-                {this.setAudioVolume(0.1) /* set the initial volume for the audio player */}
                 <source ref={this.audioPlayerSource}></source>
-              Your browser does not support the audio element.
-            </audio>
+                Your browser does not support the audio element.
+              </audio>
               <div className={styles.button_container}>
                 <Button onClick={this.sync}>Sync</Button>
                 <Button onClick={this.skip}>Skip</Button>
