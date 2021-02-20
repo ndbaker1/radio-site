@@ -27,7 +27,6 @@ export class GoogleDriveMusicPlayer extends MusicAdapter implements MusicPlayer 
   }
 
   nextSong(): void {
-    console.log('[Skipping]')
     this.playSong()
   }
 

@@ -1,24 +1,31 @@
-import { Button, Fade, Slide } from "@material-ui/core"
+import { Button, Fade, Slide, Snackbar } from "@material-ui/core"
 import { Component, createRef, RefObject } from "react"
 import { MusicState } from "../adapters/music.adapter"
 import styles from './audiostream.module.scss'
 import io from 'socket.io-client'
+import socketEvents from "../libs/socket.events"
 
 export default class AudioStream extends Component<unknown, SyncingStreamState> {
   private audioPlayer: RefObject<HTMLAudioElement> = createRef()
   private audioPlayerSource: RefObject<HTMLSourceElement> = createRef()
-  private socket!: SocketIOClient.Socket
-  constructor(props: unknown, private firstload = true) {
+  private connectedUsers = new Array<string>()
+  private streamSocket!: SocketIOClient.Socket
+  private firstload = true
+  constructor(props: unknown) {
     super(props)
     this.state = new SyncingStreamState
     // function bindings
     this.sync = this.sync.bind(this)
-    this.skip = this.skip.bind(this)
+    this.next = this.next.bind(this)
   }
 
   setupServerConnection() {
-    this.socket = io({ reconnectionDelayMax: 10000 })
-    this.socket.on('music-state', (state: MusicState) => this.setAudioState(state))
+    this.streamSocket = io({ reconnectionDelayMax: 10000 })
+    this.streamSocket.on(socketEvents.musicState, (state: MusicState) => this.setAudioState(state))
+    this.streamSocket.on(socketEvents.connectedUsers, (users: Array<string>) => { this.connectedUsers = users })
+
+    this.streamSocket.on('connect', () => this.setState({ disconnected: false }))
+    this.streamSocket.on('disconnect', () => this.setState({ disconnected: true }))
   }
 
   setAudioState(state: MusicState) {
@@ -58,16 +65,14 @@ export default class AudioStream extends Component<unknown, SyncingStreamState> 
   sync() {
     fetch('/song')
       .then(data => data.json())
-      .then((state: MusicState) => {
-        this.setAudioState(state)
-      })
+      .then((state: MusicState) => this.setAudioState(state))
   }
 
   /**
    *  Request skip and resync
    */
-  skip() {
-    fetch('/next').then(this.sync)
+  async next() {
+    await fetch('/next')
   }
 
   /**
@@ -82,28 +87,37 @@ export default class AudioStream extends Component<unknown, SyncingStreamState> 
   render() {
     return (<div className={styles.ui_container}>
       {this.state.focused ? (
-        <Slide in={true} timeout={600} direction='up'>
-          <div className={styles.ui_container}>
+        <>
+          <Slide in={true} timeout={600} direction='up'>
             <div className={styles.ui_container}>
-              <Fade in={this.state.loading} timeout={500}>
-                <img src='/loading-logo.svg' width="64" height="64" />
-              </Fade>
-              <Fade in={!this.state.loading} timeout={500}>
-                <h4 className={styles.song_title}>{this.state.currentSongName}</h4>
-              </Fade>
-            </div>
-            <div>
-              <audio controls ref={this.audioPlayer} onEnded={this.sync}>
-                <source ref={this.audioPlayerSource}></source>
+              <div className={styles.ui_container}>
+                <Fade in={this.state.loading} timeout={500}>
+                  <img src='/loading-logo.svg' width="64" height="64" />
+                </Fade>
+                <Fade in={!this.state.loading} timeout={500}>
+                  <h4 className={styles.song_title}>{this.state.currentSongName}</h4>
+                </Fade>
+              </div>
+              <div>
+                <audio controls ref={this.audioPlayer} onEnded={this.next}>
+                  <source ref={this.audioPlayerSource}></source>
                 Your browser does not support the audio element.
               </audio>
-              <div className={styles.button_container}>
-                <Button onClick={this.sync}>Sync</Button>
-                <Button onClick={this.skip}>Skip</Button>
+                <div className={styles.button_container}>
+                  <Button onClick={this.sync}>Sync</Button>
+                  <Button onClick={this.next}>Skip</Button>
+                </div>
               </div>
             </div>
-          </div>
-        </Slide>
+          </Slide>
+          <Snackbar
+            open={this.state.disconnected}
+            autoHideDuration={6000}
+            anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+            message="Disconnected. Trying to Reconnect..."
+          />
+          <ConnectedUsers users={this.connectedUsers} />
+        </>
       ) : (
           <Fade in={true} timeout={1500}>
             <Button size='large' onClick={() => {
@@ -121,4 +135,12 @@ class SyncingStreamState {
   currentSongName: string = ''
   focused: boolean = false
   loading: boolean = false
+  disconnected: boolean = true
 }
+const ConnectedUsers = (props: { users: Array<string> }): JSX.Element => (
+  <Slide in={true} direction='right'>
+    <div style={{ position: 'fixed', top: '20px', left: 0 }}>
+      {props.users.map(user => <p>{user}</p>)}
+    </div>
+  </Slide>
+)

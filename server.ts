@@ -3,7 +3,7 @@ import cors from 'cors'
 import localtunnel from 'localtunnel'
 import { Socket, Server } from 'socket.io'
 import { GoogleDriveMusicPlayer } from './adapters/google-drive-music.adapter'
-import { connect } from 'socket.io-client'
+import socketEvents from './libs/socket.events'
 
 /**
  * CONFIGURATIONS
@@ -12,7 +12,6 @@ const subdomain = process.argv[2] || 'music-radio'
 const port = 8000
 const songlistPath = './songlist.json'
 const musicPlayer = new GoogleDriveMusicPlayer(songlistPath)
-
 
 /**
  * INIT FUNCTION
@@ -40,11 +39,16 @@ async function initialize() {
 	const io: Server = require('socket.io')(server)
 	io.on('connection', (socket: Socket) => {
 		console.log('[User Connected]', socket.id)
+
 		connectedClients.push(socket)
-		socket.emit('music-state', musicPlayer.getState())
+		io.emit(socketEvents.connectedUsers, connectedClients.map(socket => socket.id))
+
+		socket.emit(socketEvents.musicState, musicPlayer.getState())
+
 		socket.on('disconnect', () => {
 			console.log('[User Disconnected]', socket.id)
 			connectedClients.splice(connectedClients.indexOf(socket), 1)
+			io.emit(socketEvents.connectedUsers, connectedClients.map(socket => socket.id))
 		})
 	})
 
@@ -63,7 +67,7 @@ async function initialize() {
 	 * Web Socket Setup
 	 */
 	musicPlayer.playSongCallback = (state) => {
-		io.emit('music-state', state)
+		io.emit(socketEvents.musicState, state)
 	}
 
 	/**
