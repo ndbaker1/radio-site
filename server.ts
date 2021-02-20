@@ -9,7 +9,7 @@ import socketEvents from './libs/socket.events'
  * CONFIGURATIONS
  */
 const subdomain = process.argv[2] || 'music-radio'
-const port = 8000
+const port = +process.argv[3] || 8000
 const songlistPath = './songlist.json'
 const musicPlayer = new GoogleDriveMusicPlayer(songlistPath)
 
@@ -38,17 +38,17 @@ async function initialize() {
 
 	const io: Server = require('socket.io')(server)
 	io.on('connection', (socket: Socket) => {
+		// first time connection
 		console.log('[User Connected]', socket.id)
-
 		connectedClients.set(socket, socket.id)
 		io.emit(socketEvents.connectedUsers, Array.from(connectedClients.values()))
-
 		socket.emit(socketEvents.musicState, musicPlayer.getState())
+		// update name when user changes
 		socket.on(socketEvents.nameUpdate, (name: string) => {
 			connectedClients.set(socket, name)
 			io.emit(socketEvents.connectedUsers, Array.from(connectedClients.values()))
 		})
-
+		// remove use from map when disconnected
 		socket.on('disconnect', () => {
 			console.log('[User Disconnected]', socket.id)
 			connectedClients.delete(socket)
@@ -59,11 +59,11 @@ async function initialize() {
 	/**
 	 *  API Routes
 	 */
-	app.get('/song', (req, res) => {
+	app.get('/song', (_, res) => {
 		res.send(musicPlayer.getState())
 	})
 
-	app.get('/next', (req, res) => {
+	app.get('/next', (_, res) => {
 		res.send(musicPlayer.nextSong())
 	})
 

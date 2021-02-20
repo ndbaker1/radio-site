@@ -1,11 +1,19 @@
 #!/bin/bash
 project="radio-site"
 
-# create folder for package
+echo 'Install and Build Static Files...'
+npm install
+npm run build
+
+echo 'Create Project Folder...'
 mkdir -p $project
-# build server.js and move static files 
+
+echo 'Build Server and Move Static Files...'
+npx tsc --project tsconfig.server.json --outDir $project
 cp -a ./out ./$project/out 
-mv server.js ./$project/server.js
-# tar folder
+
+echo 'tar folder...'
 tar cvf $project.tar $project
+
+echo 'Cleanup Project Folder...'
 rm -rf ./$project
