@@ -62,9 +62,12 @@ async function initialize() {
 	app.get('/song', (_, res) => {
 		res.send(musicPlayer.getState())
 	})
-
 	app.get('/next', (_, res) => {
 		res.send(musicPlayer.nextSong())
+	})
+	app.get('/play', (req, res) => {
+		if (req.query.songIndex)
+			res.send(musicPlayer.playSong(+req.query.songIndex))
 	})
 
 	/**

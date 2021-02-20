@@ -10,8 +10,10 @@ export class GoogleDriveMusicPlayer extends MusicAdapter implements MusicPlayer 
     )
   }
 
-  playSong(): void {
-    const songIndex = Math.round(Math.random() * (this.songs.length - 1))
+  playSong(newSongIndex?: number): void {
+    const songIndex = newSongIndex || Math.round(Math.random() * (this.songs.length - 1))
+    if (songIndex < 0 || songIndex >= this.songs.length)
+      throw new Error('song index is out of range.')
     // read file and get duration
     this.songUrl = this.gdriveIdLink(this.songs[songIndex].id)
     this.songName = this.songs[songIndex].name
