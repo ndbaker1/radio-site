@@ -20,7 +20,7 @@ async function initialize() {
 	/**
 	 * Tracking Data
 	 */
-	const connectedClients = new Array<Socket>()
+	const connectedClients = new Map<Socket, string>()
 
 	/**
 	 * Server Setup
@@ -40,15 +40,19 @@ async function initialize() {
 	io.on('connection', (socket: Socket) => {
 		console.log('[User Connected]', socket.id)
 
-		connectedClients.push(socket)
-		io.emit(socketEvents.connectedUsers, connectedClients.map(socket => socket.id))
+		connectedClients.set(socket, socket.id)
+		io.emit(socketEvents.connectedUsers, Array.from(connectedClients.values()))
 
 		socket.emit(socketEvents.musicState, musicPlayer.getState())
+		socket.on(socketEvents.nameUpdate, (name: string) => {
+			connectedClients.set(socket, name)
+			io.emit(socketEvents.connectedUsers, Array.from(connectedClients.values()))
+		})
 
 		socket.on('disconnect', () => {
 			console.log('[User Disconnected]', socket.id)
-			connectedClients.splice(connectedClients.indexOf(socket), 1)
-			io.emit(socketEvents.connectedUsers, connectedClients.map(socket => socket.id))
+			connectedClients.delete(socket)
+			io.emit(socketEvents.connectedUsers, Array.from(connectedClients.values()))
 		})
 	})
 

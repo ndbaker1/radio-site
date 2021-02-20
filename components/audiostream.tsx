@@ -1,5 +1,5 @@
-import { Button, Fade, Slide, Snackbar } from "@material-ui/core"
-import { Component, createRef, RefObject } from "react"
+import { Button, Fade, Input, Slide, Snackbar } from "@material-ui/core"
+import { Component, createRef, RefObject, Fragment } from "react"
 import { MusicState } from "../adapters/music.adapter"
 import styles from './audiostream.module.scss'
 import io from 'socket.io-client'
@@ -8,7 +8,6 @@ import socketEvents from "../libs/socket.events"
 export default class AudioStream extends Component<unknown, SyncingStreamState> {
   private audioPlayer: RefObject<HTMLAudioElement> = createRef()
   private audioPlayerSource: RefObject<HTMLSourceElement> = createRef()
-  private connectedUsers = new Array<string>()
   private streamSocket!: SocketIOClient.Socket
   private firstload = true
   constructor(props: unknown) {
@@ -22,9 +21,9 @@ export default class AudioStream extends Component<unknown, SyncingStreamState> 
   setupServerConnection() {
     this.streamSocket = io({ reconnectionDelayMax: 10000 })
     this.streamSocket.on(socketEvents.musicState, (state: MusicState) => this.setAudioState(state))
-    this.streamSocket.on(socketEvents.connectedUsers, (users: Array<string>) => { this.connectedUsers = users })
+    this.streamSocket.on(socketEvents.connectedUsers, (users: Array<string>) => this.setState({ connectedUsers: users }))
 
-    this.streamSocket.on('connect', () => this.setState({ disconnected: false }))
+    this.streamSocket.on('connect', () => this.setState({ disconnected: false, userName: this.streamSocket.id }))
     this.streamSocket.on('disconnect', () => this.setState({ disconnected: true }))
   }
 
@@ -71,8 +70,8 @@ export default class AudioStream extends Component<unknown, SyncingStreamState> 
   /**
    *  Request skip and resync
    */
-  async next() {
-    await fetch('/next')
+  next() {
+    fetch('/next')
   }
 
   /**
@@ -101,22 +100,22 @@ export default class AudioStream extends Component<unknown, SyncingStreamState> 
               <div>
                 <audio controls ref={this.audioPlayer} onEnded={this.next}>
                   <source ref={this.audioPlayerSource}></source>
-                Your browser does not support the audio element.
-              </audio>
+                  Your browser does not support the audio element.
+                </audio>
                 <div className={styles.button_container}>
                   <Button onClick={this.sync}>Sync</Button>
                   <Button onClick={this.next}>Skip</Button>
                 </div>
+                <Input fullWidth={true} onChange={(event) => {
+                  const userName = event.target.value
+                  this.setState({ userName })
+                  this.streamSocket.emit(socketEvents.nameUpdate, userName)
+                }} value={this.state.userName} />
               </div>
             </div>
           </Slide>
-          <Snackbar
-            open={this.state.disconnected}
-            autoHideDuration={6000}
-            anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-            message="Disconnected. Trying to Reconnect..."
-          />
-          <ConnectedUsers users={this.connectedUsers} />
+          <DisconnectedMessage disconnected={this.state.disconnected} />
+          <ConnectedUsers users={this.state.connectedUsers} />
         </>
       ) : (
           <Fade in={true} timeout={1500}>
@@ -136,11 +135,27 @@ class SyncingStreamState {
   focused: boolean = false
   loading: boolean = false
   disconnected: boolean = true
+  userName: string = ''
+  connectedUsers = new Array<string>()
 }
+
+const DisconnectedMessage = (props: { disconnected: boolean }): JSX.Element => (
+  <Snackbar
+    open={props.disconnected}
+    anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+    message="Disconnected. Trying to Reconnect..."
+  />
+)
+
 const ConnectedUsers = (props: { users: Array<string> }): JSX.Element => (
-  <Slide in={true} direction='right'>
-    <div style={{ position: 'fixed', top: '20px', left: 0 }}>
-      {props.users.map(user => <p>{user}</p>)}
-    </div>
-  </Slide>
+  <Snackbar
+    open={true}
+    anchorOrigin={{ vertical: 'top', horizontal: 'left' }}
+    message={
+      <Fragment>
+        <h2>Listeners</h2>
+        {props.users.map(user => <p>{user}</p>)}
+      </Fragment>
+    }
+  />
 )
