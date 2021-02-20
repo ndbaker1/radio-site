@@ -1,5 +1,5 @@
 # Music Radio Site
-A site build with `NextJS` and server hosted using `expressjs` and `localtunnel` in order to sync up listeners to the same active songs loaded from a Google Drive.
+A site build with `NextJS` and server hosted using `expressjs`, `localtunnel`, and `socket.io` in order to sync up listeners to the same active songs loaded from a Google Drive.
 
 ## Precompiled Run
 ```
@@ -7,13 +7,13 @@ Grab Executables:
 curl -L https://github.com/ndbaker1/radio-site/raw/master/radio-site.tar > radio-site.tar && tar xvf radio-site.tar && rm radio-site.tar
 
 Install Node Modules:
-npm install express localtunnel
+npm install express cors socket.io localtunnel
 
 Contruct a SongList JSON with the loader (this is just mine):
 curl -L https://raw.githubusercontent.com/ndbaker1/radio-site/master/songlist.json > songlist.json
 
 Run:
-node server.js SUBDOMAIN
+node server.js SUBDOMAIN PORT
 ```
 
 ## Setup
@@ -21,7 +21,7 @@ Install node modules, build NextJS static files, start express and localtunnel w
 ```
 npm install
 npm run build
-npm run start SUBDOMAIN
+npm run start SUBDOMAIN PORT
 ```
 
 #### Known Issues:
