@@ -1,7 +1,9 @@
 import express from 'express'
+import cors from 'cors'
 import localtunnel from 'localtunnel'
-import socketIO from 'socket.io'
-import { GoogleDriveMusicPlayer, MusicState } from './utils/music.adapter'
+import { Socket, Server } from 'socket.io'
+import { GoogleDriveMusicPlayer } from './adapters/google-drive-music.adapter'
+import { connect } from 'socket.io-client'
 
 /**
  * CONFIGURATIONS
@@ -11,13 +13,23 @@ const port = 8000
 const songlistPath = './songlist.json'
 const musicPlayer = new GoogleDriveMusicPlayer(songlistPath)
 
+
+/**
+ * INIT FUNCTION
+ */
 async function initialize() {
+	/**
+	 * Tracking Data
+	 */
+	const connectedClients = new Array<Socket>()
+
 	/**
 	 * Server Setup
 	 */
 	const app = express()
 	// use the NextJS static export folder to serve content
 	app.use(express.static('out'))
+	app.use(cors())
 
 	const server = app.listen(port, () => {
 		console.log(`Song Server listening on http://localhost:${port}`)
@@ -25,9 +37,15 @@ async function initialize() {
 	const tunnel = await localtunnel({ port, subdomain })
 	console.log(`Public tunnel setup at ${tunnel.url}\n`)
 
-	const io = socketIO(server)
-	io.on('connection', (socket) => {
-		console.log('User Connected')
+	const io: Server = require('socket.io')(server)
+	io.on('connection', (socket: Socket) => {
+		console.log('[User Connected]', socket.id)
+		connectedClients.push(socket)
+		socket.emit('music-state', musicPlayer.getState())
+		socket.on('disconnect', () => {
+			console.log('[User Disconnected]', socket.id)
+			connectedClients.splice(connectedClients.indexOf(socket), 1)
+		})
 	})
 
 	/**
@@ -37,14 +55,14 @@ async function initialize() {
 		res.send(musicPlayer.getState())
 	})
 
-	app.get('/skip', (req, res) => {
-		res.send(musicPlayer.skipSong())
+	app.get('/next', (req, res) => {
+		res.send(musicPlayer.nextSong())
 	})
 
 	/**
 	 * Web Socket Setup
 	 */
-	musicPlayer.playSongCallback = (state: MusicState) => {
+	musicPlayer.playSongCallback = (state) => {
 		io.emit('music-state', state)
 	}
 
@@ -61,11 +79,12 @@ async function initialize() {
 		server.close()
 		console.log('Shutting down socket.io...')
 		io.close()
-		console.log('Cleaning up music player resouces...')
-		musicPlayer.cleanup()
 	}
 }
 
+/**
+ * INIT AND RUN
+ */
 initialize().then(() => {
 	musicPlayer.playSong()
 })
