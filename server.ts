@@ -1,6 +1,9 @@
 import express from 'express'
+import cors from 'cors'
 import localtunnel from 'localtunnel'
-import { readFileSync } from 'fs'
+import { Socket, Server } from 'socket.io'
+import { GoogleDriveMusicPlayer } from './adapters/google-drive-music.adapter'
+import socketEvents from './libs/socket.events'
 
 /**
  * CONFIGURATIONS
@@ -8,65 +11,89 @@ import { readFileSync } from 'fs'
 const subdomain = process.argv[2] || 'music-radio'
 const port = 8000
 const songlistPath = './songlist.json'
+const musicPlayer = new GoogleDriveMusicPlayer(songlistPath)
 
 /**
- * Express Setup
+ * INIT FUNCTION
  */
-const app = express()
-// use the NextJS static export folder to serve content
-app.use(express.static('out'))
+async function initialize() {
+	/**
+	 * Tracking Data
+	 */
+	const connectedClients = new Map<Socket, string>()
 
-/**
- * Song Managment Setup
- */
-let currentSongId = ''
-let currentSongName = ''
-let playbackStartTime = 0
-let songTimeout: NodeJS.Timeout
+	/**
+	 * Server Setup
+	 */
+	const app = express()
+	// use the NextJS static export folder to serve content
+	app.use(express.static('out'))
+	app.use(cors())
 
-const songs: Array<{ id: string, name: string }> = JSON.parse(readFileSync(songlistPath, { encoding: 'utf-8' }))
+	const server = app.listen(port, () => {
+		console.log(`Song Server listening on http://localhost:${port}`)
+	})
+	const tunnel = await localtunnel({ port, subdomain })
+	console.log(`Public tunnel setup at ${tunnel.url}\n`)
 
-function playSong() {
-	const songIndex = Math.round(Math.random() * (songs.length - 1))
-	// read file and get duration
-	currentSongId = songs[songIndex].id
-	currentSongName = songs[songIndex].name
-		// remove extension name
-		.substring(0, songs[songIndex].name.lastIndexOf('.'))
-	// read song from url
-	const songDuration = 20 * 1000 // THIS NEEDS TO BE UPDATES TO REFLECT THE DURATION OF THE SONG
-	// reset playback start time
-	playbackStartTime = Date.now()
-	songTimeout = setTimeout(playSong, songDuration)
-	console.log('[Playing]', currentSongName)
+	const io: Server = require('socket.io')(server)
+	io.on('connection', (socket: Socket) => {
+		console.log('[User Connected]', socket.id)
+
+		connectedClients.set(socket, socket.id)
+		io.emit(socketEvents.connectedUsers, Array.from(connectedClients.values()))
+
+		socket.emit(socketEvents.musicState, musicPlayer.getState())
+		socket.on(socketEvents.nameUpdate, (name: string) => {
+			connectedClients.set(socket, name)
+			io.emit(socketEvents.connectedUsers, Array.from(connectedClients.values()))
+		})
+
+		socket.on('disconnect', () => {
+			console.log('[User Disconnected]', socket.id)
+			connectedClients.delete(socket)
+			io.emit(socketEvents.connectedUsers, Array.from(connectedClients.values()))
+		})
+	})
+
+	/**
+	 *  API Routes
+	 */
+	app.get('/song', (req, res) => {
+		res.send(musicPlayer.getState())
+	})
+
+	app.get('/next', (req, res) => {
+		res.send(musicPlayer.nextSong())
+	})
+
+	/**
+	 * Web Socket Setup
+	 */
+	musicPlayer.playSongCallback = (state) => {
+		io.emit(socketEvents.musicState, state)
+	}
+
+	/**
+	 * Gracefully handle shutdown
+	 */
+	process.on('SIGINT', shutdown)
+	process.on('SIGTERM', shutdown)
+
+	function shutdown() {
+		console.log('\nShutting down localtunnel...')
+		tunnel.close()
+		console.log('Shutting down express...')
+		server.close()
+		console.log('Shutting down socket.io...')
+		io.close()
+	}
 }
 
 /**
- *  API Routes
+ * INIT AND RUN
  */
-app.get('/song', (req, res) => {
-	// convert from milliseconds to seconds
-	const songPosition = (Date.now() - playbackStartTime) / 1000
-	res.send({
-		name: currentSongName,
-		id: currentSongId,
-		currentTime: songPosition
-	})
+initialize().then(() => {
+	musicPlayer.playSong()
 })
 
-app.get('/skip', (req, res) => {
-	console.log('[Skipping]')
-	clearTimeout(songTimeout)
-	playSong()
-	res.send()
-})
-
-/**
- * Express Server Start
- */
-app.listen(port, async () => {
-	console.log(`Song Server listening on http://localhost:${port}`)
-	const tunnel = await localtunnel({ port, subdomain })
-	console.log(`Public tunnel setup at ${tunnel.url}\n`)
-	playSong()
-})
