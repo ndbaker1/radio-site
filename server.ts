@@ -1,9 +1,11 @@
 import express from 'express'
 import cors from 'cors'
 import localtunnel from 'localtunnel'
+
 import { Socket, Server } from 'socket.io'
+import streamEvents from './libs/socket.events'
+
 import { GoogleDriveMusicPlayer } from './adapters/google-drive-music.adapter'
-import socketEvents from './libs/socket.events'
 
 /**
  * CONFIGURATIONS
@@ -41,19 +43,19 @@ async function initialize() {
 		// first time connection
 		console.log('[User Connected]', socket.id)
 		connectedClients.set(socket, socket.id)
-		io.emit(socketEvents.connectedUsers, Array.from(connectedClients.values()))
-		socket.emit(socketEvents.songList, musicPlayer.songs)
-		socket.emit(socketEvents.musicState, musicPlayer.getState())
+		io.emit(streamEvents.connectedUsersUpdate, Array.from(connectedClients.values()))
+		socket.emit(streamEvents.songListUpdate, musicPlayer.songs.map(song => song.name))
+		socket.emit(streamEvents.musicStateUpdate, musicPlayer.getState())
 		// update name when user changes
-		socket.on(socketEvents.nameUpdate, (name: string) => {
+		socket.on(streamEvents.nameUpdate, (name: string) => {
 			connectedClients.set(socket, name)
-			io.emit(socketEvents.connectedUsers, Array.from(connectedClients.values()))
+			io.emit(streamEvents.connectedUsersUpdate, Array.from(connectedClients.values()))
 		})
 		// remove use from map when disconnected
 		socket.on('disconnect', () => {
 			console.log('[User Disconnected]', socket.id)
 			connectedClients.delete(socket)
-			io.emit(socketEvents.connectedUsers, Array.from(connectedClients.values()))
+			io.emit(streamEvents.connectedUsersUpdate, Array.from(connectedClients.values()))
 		})
 	})
 
@@ -71,10 +73,10 @@ async function initialize() {
 	})
 
 	/**
-	 * Web Socket Setup
+	 * Web Socket Song Emitter
 	 */
 	musicPlayer.playSongCallback = (state) => {
-		io.emit(socketEvents.musicState, state)
+		io.emit(streamEvents.musicStateUpdate, state)
 	}
 
 	/**

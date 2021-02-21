@@ -2,9 +2,9 @@ import { Input, List, ListItem, Snackbar } from "@material-ui/core";
 import CloseIcon from '@material-ui/icons/Close';
 import { useState } from "react";
 
-const TrackPlayer = (props: { songs: Array<string>, playTrackIndex: (index: number) => void }): JSX.Element => {
+export default function TrackPlayer(props: { songs: Array<string>, playTrackIndex: (index: number) => void }): JSX.Element {
   const [open, setOpen] = useState(false)
-  const [searchTerm, setSearchTerm] = useState("")
+  const [searchTerm, setSearchTerm] = useState('')
 
   return (
     <>
@@ -40,5 +40,3 @@ const TrackPlayer = (props: { songs: Array<string>, playTrackIndex: (index: numb
     </>
   )
 }
-
-export default TrackPlayer

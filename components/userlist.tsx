@@ -2,7 +2,7 @@ import { Snackbar } from "@material-ui/core"
 import CloseIcon from '@material-ui/icons/Close';
 import { useState } from "react"
 
-const ConnectedUserList = (props: { users: Array<string> }): JSX.Element => {
+export default function ConnectedUserList(props: { users: Array<string> }): JSX.Element {
   const [open, setOpen] = useState(true)
 
   return (
@@ -32,5 +32,3 @@ const ConnectedUserList = (props: { users: Array<string> }): JSX.Element => {
     </>
   )
 }
-
-export default ConnectedUserList
