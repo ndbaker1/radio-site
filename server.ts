@@ -42,6 +42,7 @@ async function initialize() {
 		console.log('[User Connected]', socket.id)
 		connectedClients.set(socket, socket.id)
 		io.emit(socketEvents.connectedUsers, Array.from(connectedClients.values()))
+		socket.emit(socketEvents.songList, musicPlayer.songs)
 		socket.emit(socketEvents.musicState, musicPlayer.getState())
 		// update name when user changes
 		socket.on(socketEvents.nameUpdate, (name: string) => {

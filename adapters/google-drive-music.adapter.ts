@@ -2,7 +2,7 @@ import { readFileSync } from "fs"
 import { MusicAdapter, MusicPlayer, MusicState, SongEntry } from "./music.adapter"
 
 export class GoogleDriveMusicPlayer extends MusicAdapter implements MusicPlayer {
-  private songs: Array<SongEntry>
+  public songs: Array<SongEntry>
   constructor(songlistPath: string, public playSongCallback?: (state: MusicState) => void) {
     super()
     this.songs = JSON.parse(

@@ -1,7 +1,8 @@
 const socketEvents = {
   connectedUsers: 'connected-users',
   musicState: 'music-state',
-  nameUpdate: 'name-update'
+  nameUpdate: 'name-update',
+  songList: 'songlist'
 }
 
 export default socketEvents

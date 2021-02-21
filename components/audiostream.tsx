@@ -1,4 +1,4 @@
-import { Button, Fade, Input, Slide, Snackbar } from "@material-ui/core"
+import { Button, Fade, Input, List, ListItem, Paper, Slide, Snackbar } from "@material-ui/core"
 import { Component, createRef, RefObject, Fragment } from "react"
 import { MusicState } from "../adapters/music.adapter"
 import styles from './audiostream.module.scss'
@@ -16,17 +16,26 @@ export default class AudioStream extends Component<unknown, SyncingStreamState> 
     // function bindings
     this.sync = this.sync.bind(this)
     this.next = this.next.bind(this)
+    this.play = this.play.bind(this)
   }
 
+  /**
+   * Sets up Socket.io Client
+   */
   setupServerConnection() {
     this.streamSocket = io({ reconnectionDelayMax: 10000 })
     this.streamSocket.on(socketEvents.musicState, (state: MusicState) => this.setAudioState(state))
-    this.streamSocket.on(socketEvents.connectedUsers, (users: Array<string>) => this.setState({ connectedUsers: users }))
+    this.streamSocket.on(socketEvents.connectedUsers, (connectedUsers: Array<string>) => this.setState({ connectedUsers }))
+    this.streamSocket.on(socketEvents.songList, (songList: Array<any>) => this.setState({ songList: songList.map(item => item.name) }))
 
     this.streamSocket.on('connect', () => this.setState({ disconnected: false, userName: this.streamSocket.id }))
     this.streamSocket.on('disconnect', () => this.setState({ disconnected: true }))
   }
 
+  /**
+   * Sets the song, timestamp and any other data for the AudioPlayer
+   * @param state new state for the AudioPlayer
+   */
   setAudioState(state: MusicState) {
     if (this.audioPlayerSource.current && this.audioPlayer.current) {
       // load source and reload URLs
@@ -75,6 +84,14 @@ export default class AudioStream extends Component<unknown, SyncingStreamState> 
   }
 
   /**
+   * Plays an index on the songlist
+   * @param songIndex index on the Songlist.json object
+   */
+  play(songIndex: number) {
+    fetch('/play?songIndex=' + songIndex)
+  }
+
+  /**
    * Sets the volume on the Audio Player
    * @param volume a volume level between 0 and 1
    */
@@ -116,6 +133,7 @@ export default class AudioStream extends Component<unknown, SyncingStreamState> 
           </Slide>
           <DisconnectedMessage disconnected={this.state.disconnected} />
           <ConnectedUsers users={this.state.connectedUsers} />
+          <SongList songs={this.state.songList} playSong={this.play} />
         </>
       ) : (
           <Fade in={true} timeout={1500}>
@@ -137,6 +155,7 @@ class SyncingStreamState {
   disconnected: boolean = true
   userName: string = ''
   connectedUsers = new Array<string>()
+  songList = new Array<any>()
 }
 
 const DisconnectedMessage = (props: { disconnected: boolean }): JSX.Element => (
@@ -155,6 +174,22 @@ const ConnectedUsers = (props: { users: Array<string> }): JSX.Element => (
       <Fragment>
         <h2>Listeners</h2>
         {props.users.map(user => <p>{user}</p>)}
+      </Fragment>
+    }
+  />
+)
+
+const SongList = (props: { songs: Array<any>, playSong: (index: number) => void }): JSX.Element => (
+  <Snackbar
+    open={true}
+    anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+    message={
+      <Fragment>
+        <Paper elevation={0} style={{ maxHeight: 400, maxWidth: 500, overflow: 'auto', backgroundColor: 'transparent' }}>
+          <List>
+            {props.songs.map((song, index) => <ListItem onClick={() => props.playSong(index)} button>{song}</ListItem>)}
+          </List>
+        </Paper>
       </Fragment>
     }
   />
