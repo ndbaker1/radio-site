@@ -2,7 +2,7 @@ import { readFileSync } from "fs"
 import { MusicAdapter, MusicPlayer, MusicState, SongEntry } from "./music.adapter"
 
 export class GoogleDriveMusicPlayer extends MusicAdapter implements MusicPlayer {
-  private songs: Array<SongEntry>
+  public songs: Array<SongEntry>
   constructor(songlistPath: string, public playSongCallback?: (state: MusicState) => void) {
     super()
     this.songs = JSON.parse(
@@ -10,8 +10,10 @@ export class GoogleDriveMusicPlayer extends MusicAdapter implements MusicPlayer 
     )
   }
 
-  playSong(): void {
-    const songIndex = Math.round(Math.random() * (this.songs.length - 1))
+  playSong(newSongIndex?: any): void {
+    const songIndex = newSongIndex === undefined ? Math.round(Math.random() * (this.songs.length - 1)) : +newSongIndex
+    if (songIndex < 0 || songIndex >= this.songs.length)
+      throw new Error('song index is out of range.')
     // read file and get duration
     this.songUrl = this.gdriveIdLink(this.songs[songIndex].id)
     this.songName = this.songs[songIndex].name

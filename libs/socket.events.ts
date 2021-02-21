@@ -1,7 +1,8 @@
-const socketEvents = {
-  connectedUsers: 'connected-users',
-  musicState: 'music-state',
-  nameUpdate: 'name-update'
+enum streamEvents {
+  connectedUsersUpdate = 'connected-users',
+  musicStateUpdate = 'music-state',
+  nameUpdate = 'name-update',
+  songListUpdate = 'songlist'
 }
 
-export default socketEvents
+export default streamEvents
