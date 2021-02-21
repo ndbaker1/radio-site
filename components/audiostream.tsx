@@ -2,7 +2,7 @@ import { Button, Fade, Slide, Snackbar, TextField } from "@material-ui/core"
 import { Component, createRef, RefObject } from "react"
 
 import io from 'socket.io-client'
-import streamEvents from "../libs/socket.events"
+import streamEvents from "../lib/socket.events"
 
 import { MusicState } from "../adapters/music.adapter"
 import ConnectedUserList from "./userlist"

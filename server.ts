@@ -3,8 +3,10 @@ import cors from 'cors'
 import localtunnel from 'localtunnel'
 
 import { Socket, Server } from 'socket.io'
-import streamEvents from './libs/socket.events'
+import streamEvents from './lib/socket.events'
 
+import inquirer from 'inquirer'
+import chalk from 'chalk'
 import { GoogleDriveMusicPlayer } from './adapters/google-drive-music.adapter'
 
 /**
@@ -15,10 +17,26 @@ const port = +process.argv[3] || 8000
 const songlistPath = './songlist.json'
 const musicPlayer = new GoogleDriveMusicPlayer(songlistPath)
 
+
+async function configure() {
+
+	await inquirer
+		.prompt([
+			{
+				type: 'list',
+				name: 'storagePlatform',
+				message: 'Which Storage Platform would you like to generate a songlist.json from?',
+				choices: ['google drive']
+			},
+		])
+		.then(answers => {
+		})
+}
+
 /**
  * INIT FUNCTION
  */
-async function initialize() {
+async function initializeServer() {
 	/**
 	 * Tracking Data
 	 */
@@ -33,10 +51,10 @@ async function initialize() {
 	app.use(express.static('out'))
 
 	const server = app.listen(port, () => {
-		console.log(`Song Server listening on http://localhost:${port}`)
+		console.log(`Server Listening on ${chalk.green(`http://localhost:${port}`)}`)
 	})
 	const tunnel = await localtunnel({ port, subdomain })
-	console.log(`Public tunnel setup at ${tunnel.url}\n`)
+	console.log(`Public Tunnel Listening on ${chalk.green(tunnel.url)}\n`)
 
 	const io: Server = require('socket.io')(server)
 	io.on('connection', (socket: Socket) => {
@@ -96,9 +114,11 @@ async function initialize() {
 }
 
 /**
- * INIT AND RUN
+ * CONFIGURE -> INIT -> RUN (ﾉ*ФωФ)ﾉ
  */
-initialize().then(() => {
+// configure().then(() =>
+initializeServer().then(() =>
 	musicPlayer.playSong()
-})
+)
+// )
 
