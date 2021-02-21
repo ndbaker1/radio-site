@@ -67,8 +67,7 @@ async function initialize() {
 		res.send(musicPlayer.nextSong())
 	})
 	app.get('/play', (req, res) => {
-		if (req.query.songIndex)
-			res.send(musicPlayer.playSong(+req.query.songIndex))
+		res.send(musicPlayer.playSong(req.query.songIndex))
 	})
 
 	/**

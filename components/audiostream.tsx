@@ -1,5 +1,5 @@
-import { Button, Fade, Input, List, ListItem, Paper, Slide, Snackbar } from "@material-ui/core"
-import { Component, createRef, RefObject, Fragment } from "react"
+import { Button, Fade, Input, List, ListItem, Slide, Snackbar, TextField } from "@material-ui/core"
+import { Component, createRef, RefObject, useState } from "react"
 import { MusicState } from "../adapters/music.adapter"
 import styles from './audiostream.module.scss'
 import io from 'socket.io-client'
@@ -123,17 +123,23 @@ export default class AudioStream extends Component<unknown, SyncingStreamState> 
                   <Button onClick={this.sync}>Sync</Button>
                   <Button onClick={this.next}>Skip</Button>
                 </div>
-                <Input fullWidth={true} onChange={(event) => {
-                  const userName = event.target.value
-                  this.setState({ userName })
-                  this.streamSocket.emit(socketEvents.nameUpdate, userName)
-                }} value={this.state.userName} />
+                <TextField
+                  label="Name"
+                  variant="filled"
+                  fullWidth={true}
+                  value={this.state.userName}
+                  onChange={(event) => {
+                    const userName = event.target.value
+                    this.setState({ userName })
+                    this.streamSocket.emit(socketEvents.nameUpdate, userName)
+                  }}
+                />
               </div>
             </div>
           </Slide>
           <DisconnectedMessage disconnected={this.state.disconnected} />
           <ConnectedUsers users={this.state.connectedUsers} />
-          <SongList songs={this.state.songList} playSong={this.play} />
+          <TrackList songs={this.state.songList} playSong={this.play} />
         </>
       ) : (
           <Fade in={true} timeout={1500}>
@@ -171,26 +177,37 @@ const ConnectedUsers = (props: { users: Array<string> }): JSX.Element => (
     open={true}
     anchorOrigin={{ vertical: 'top', horizontal: 'left' }}
     message={
-      <Fragment>
+      <div style={{ display: 'flex', flexDirection: 'column', maxHeight: 'calc(100vh - 76px)', width: 300, overflow: 'hidden' }} >
         <h2>Listeners</h2>
-        {props.users.map(user => <p>{user}</p>)}
-      </Fragment>
+        <div style={{ overflow: 'auto', overflowWrap: 'break-word' }}>
+          {props.users.map(user => <p>{user}</p>)}
+        </div>
+      </div>
     }
   />
 )
 
-const SongList = (props: { songs: Array<any>, playSong: (index: number) => void }): JSX.Element => (
-  <Snackbar
-    open={true}
-    anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
-    message={
-      <Fragment>
-        <Paper elevation={0} style={{ maxHeight: 400, maxWidth: 500, overflow: 'auto', backgroundColor: 'transparent' }}>
-          <List>
-            {props.songs.map((song, index) => <ListItem onClick={() => props.playSong(index)} button>{song}</ListItem>)}
-          </List>
-        </Paper>
-      </Fragment>
-    }
-  />
-)
+const TrackList = (props: { songs: Array<string>, playSong: (index: number) => void }): JSX.Element => {
+  const [searchTerm, setSearchTerm] = useState("");
+  return (
+
+    <Snackbar
+      open={true}
+      anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+      message={
+        <div style={{ display: 'flex', flexDirection: 'column', maxHeight: 'calc(100vh - 76px)', width: 500, overflow: 'hidden' }}>
+          <h2>Track List</h2>
+          <Input fullWidth={true} placeholder="Search" value={searchTerm} onChange={(event: any) => setSearchTerm(event.target.value)} />
+          <div style={{ overflow: 'auto', overflowWrap: 'break-word' }}>
+            <List>
+              {props.songs
+                .map((song, index) => <ListItem key={song} onClick={() => props.playSong(index)} button>{song}</ListItem>)
+                .filter(item => item.key?.toString().toLowerCase().includes(searchTerm))
+              }
+            </List>
+          </div>
+        </div>
+      }
+    />
+  )
+}
