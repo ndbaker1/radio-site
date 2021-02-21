@@ -26,9 +26,9 @@ async function initialize() {
 	 * Server Setup
 	 */
 	const app = express()
+	app.use(cors())
 	// use the NextJS static export folder to serve content
 	app.use(express.static('out'))
-	app.use(cors())
 
 	const server = app.listen(port, () => {
 		console.log(`Song Server listening on http://localhost:${port}`)

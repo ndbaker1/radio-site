@@ -1,9 +1,11 @@
-import { Button, Fade, Input, List, ListItem, Slide, Snackbar, TextField } from "@material-ui/core"
-import { Component, createRef, RefObject, useState } from "react"
+import { Button, Fade, Slide, Snackbar, TextField } from "@material-ui/core"
+import { Component, createRef, RefObject } from "react"
 import { MusicState } from "../adapters/music.adapter"
 import styles from './audiostream.module.scss'
 import io from 'socket.io-client'
 import socketEvents from "../libs/socket.events"
+import ConnectedUserList from "./userlist"
+import TrackPlayer from "./trackplayer"
 
 export default class AudioStream extends Component<unknown, SyncingStreamState> {
   private audioPlayer: RefObject<HTMLAudioElement> = createRef()
@@ -102,53 +104,54 @@ export default class AudioStream extends Component<unknown, SyncingStreamState> 
 
   render() {
     return (<div className={styles.ui_container}>
-      {this.state.focused ? (
-        <>
-          <Slide in={true} timeout={600} direction='up'>
-            <div className={styles.ui_container}>
+      {
+        this.state.focused ? (
+          <>
+            <Slide in={true} timeout={600} direction='up'>
               <div className={styles.ui_container}>
-                <Fade in={this.state.loading} timeout={500}>
-                  <img src='/loading-logo.svg' width="64" height="64" />
-                </Fade>
-                <Fade in={!this.state.loading} timeout={500}>
-                  <h4 className={styles.song_title}>{this.state.currentSongName}</h4>
-                </Fade>
-              </div>
-              <div>
-                <audio controls ref={this.audioPlayer} onEnded={this.next}>
-                  <source ref={this.audioPlayerSource}></source>
-                  Your browser does not support the audio element.
-                </audio>
-                <div className={styles.button_container}>
-                  <Button onClick={this.sync}>Sync</Button>
-                  <Button onClick={this.next}>Skip</Button>
+                <div className={styles.ui_container}>
+                  <Fade in={this.state.loading} timeout={500}>
+                    <img src='/loading-logo.svg' width="64" height="64" />
+                  </Fade>
+                  <Fade in={!this.state.loading} timeout={500}>
+                    <h4 className={styles.song_title}>{this.state.currentSongName}</h4>
+                  </Fade>
                 </div>
-                <TextField
-                  label="Name"
-                  variant="filled"
-                  fullWidth={true}
-                  value={this.state.userName}
-                  onChange={(event) => {
-                    const userName = event.target.value
-                    this.setState({ userName })
-                    this.streamSocket.emit(socketEvents.nameUpdate, userName)
-                  }}
-                />
+                <div>
+                  <audio controls ref={this.audioPlayer} onEnded={this.next}>
+                    <source ref={this.audioPlayerSource}></source>
+                    Your browser does not support the audio element.
+                  </audio>
+                  <div className={styles.button_container}>
+                    <Button onClick={this.sync}>Sync</Button>
+                    <Button onClick={this.next}>Skip</Button>
+                  </div>
+                  <TextField
+                    label="Name"
+                    variant="filled"
+                    fullWidth={true}
+                    value={this.state.userName}
+                    onChange={(event) => {
+                      const userName = event.target.value
+                      this.setState({ userName })
+                      this.streamSocket.emit(socketEvents.nameUpdate, userName)
+                    }}
+                  />
+                </div>
               </div>
-            </div>
-          </Slide>
-          <DisconnectedMessage disconnected={this.state.disconnected} />
-          <ConnectedUsers users={this.state.connectedUsers} />
-          <TrackList songs={this.state.songList} playSong={this.play} />
-        </>
-      ) : (
-          <Fade in={true} timeout={1500}>
-            <Button size='large' onClick={() => {
-              this.setState({ focused: true })
-              this.setupServerConnection()
-            }}>Start Listening</Button>
-          </Fade>
-        )
+            </Slide>
+            <DisconnectedMessage disconnected={this.state.disconnected} />
+            <ConnectedUserList users={this.state.connectedUsers} />
+            <TrackPlayer songs={this.state.songList} playTrackIndex={this.play} />
+          </>
+        ) : (
+            <Fade in={true} timeout={1500}>
+              <Button size='large' onClick={() => {
+                this.setState({ focused: true })
+                this.setupServerConnection()
+              }}>Start Listening</Button>
+            </Fade>
+          )
       }
     </div>)
   }
@@ -172,42 +175,3 @@ const DisconnectedMessage = (props: { disconnected: boolean }): JSX.Element => (
   />
 )
 
-const ConnectedUsers = (props: { users: Array<string> }): JSX.Element => (
-  <Snackbar
-    open={true}
-    anchorOrigin={{ vertical: 'top', horizontal: 'left' }}
-    message={
-      <div style={{ display: 'flex', flexDirection: 'column', maxHeight: 'calc(100vh - 76px)', width: 300, overflow: 'hidden' }} >
-        <h2>Listeners</h2>
-        <div style={{ overflow: 'auto', overflowWrap: 'break-word' }}>
-          {props.users.map(user => <p>{user}</p>)}
-        </div>
-      </div>
-    }
-  />
-)
-
-const TrackList = (props: { songs: Array<string>, playSong: (index: number) => void }): JSX.Element => {
-  const [searchTerm, setSearchTerm] = useState("");
-  return (
-
-    <Snackbar
-      open={true}
-      anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
-      message={
-        <div style={{ display: 'flex', flexDirection: 'column', maxHeight: 'calc(100vh - 76px)', width: 500, overflow: 'hidden' }}>
-          <h2>Track List</h2>
-          <Input fullWidth={true} placeholder="Search" value={searchTerm} onChange={(event: any) => setSearchTerm(event.target.value)} />
-          <div style={{ overflow: 'auto', overflowWrap: 'break-word' }}>
-            <List>
-              {props.songs
-                .map((song, index) => <ListItem key={song} onClick={() => props.playSong(index)} button>{song}</ListItem>)
-                .filter(item => item.key?.toString().toLowerCase().includes(searchTerm))
-              }
-            </List>
-          </div>
-        </div>
-      }
-    />
-  )
-}
