@@ -3,13 +3,9 @@ A site build with `NextJS` and server hosted using `expressjs`, `localtunnel`, a
 
 ## Precompiled Run
 ```
-Grab Executables:
 curl -L https://github.com/ndbaker1/radio-site/raw/master/radio-site.tar > radio-site.tar && tar xvf radio-site.tar && rm radio-site.tar
-
-Install Node Modules:
-npm install express cors socket.io localtunnel
-
-Run:
+cd radio-site
+npm install
 node server.js SUBDOMAIN PORT
 ```
 
