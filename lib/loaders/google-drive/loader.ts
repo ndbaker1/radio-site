@@ -46,10 +46,12 @@ export function saveToFile(filePath: PathLike, callback: NoParamCallback) {
 			if (res?.data?.files?.length) {
 				for (const schemaFile of res.data.files) {
 					const file = schemaFile as { name: string, id: string, mimeType: string }
+					const path = (pathname ? pathname + ' / ' : '')
 					if (['audio/mp3', 'audio/mpeg'].includes(file.mimeType))
-						songlistJSON.push({ name: file.name.substring(0, file.name.lastIndexOf('.')), url: `https://docs.google.com/uc?export=download&id=${file.id}` })
-					else if (file.mimeType === 'application/vnd.google-apps.folder')
-						await searchInFolderId(file.id, pathname ? pathname + '/' + file.name : file.name)
+						songlistJSON.push({ name: path + file.name.substring(0, file.name.lastIndexOf('.')), url: `https://docs.google.com/uc?export=download&id=${file.id}` })
+					else if (file.mimeType === 'application/vnd.google-apps.folder') {
+						await searchInFolderId(file.id, path + file.name)
+					}
 					else
 						console.log(`mimeType: ${file.mimeType} not handled.`)
 				}
