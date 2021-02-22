@@ -1,6 +1,7 @@
 {
   "compilerOptions": {
     "strict": true,
+    "target": "ESNext",
     "noImplicitAny": true,
     "preserveConstEnums": true,
     "sourceMap": false,

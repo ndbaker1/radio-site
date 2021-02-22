@@ -9,9 +9,6 @@ curl -L https://github.com/ndbaker1/radio-site/raw/master/radio-site.tar > radio
 Install Node Modules:
 npm install express cors socket.io localtunnel
 
-Contruct a SongList JSON with the loader (this is just mine):
-curl -L https://raw.githubusercontent.com/ndbaker1/radio-site/master/songlist.json > songlist.json
-
 Run:
 node server.js SUBDOMAIN PORT
 ```
@@ -23,6 +20,10 @@ npm install
 npm run build
 npm run start SUBDOMAIN PORT
 ```
+
+## Extending
+The `lib/loaders` directory contains the platform-specific implementations for the `loader.ts`.  
+> Currently only done for Google Drive and requires a credentials.json from the drive API
 
 #### Known Issues:
 > if the `sharp` module is missing from the require stack then first attempt installing it with `npm i sharp`. if not successfully, then diagnose the errors based on your OS and configurations.

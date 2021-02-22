@@ -108,3 +108,4 @@ dist
 credentials.json
 token.json
 out/
+songlist.json

@@ -1,42 +1,47 @@
+// core libs
 import express from 'express'
 import cors from 'cors'
 import localtunnel from 'localtunnel'
-
+// sockets
 import { Socket, Server } from 'socket.io'
 import streamEvents from './lib/socket.events'
-
+// ui and interface
 import inquirer from 'inquirer'
 import chalk from 'chalk'
-import { GoogleDriveMusicPlayer } from './adapters/google-drive-music.adapter'
+// player
+import { MusicPlayer, SongEntry } from './lib/musicplayer'
+// filesystem
+import { existsSync, readdirSync, readFileSync } from 'fs'
 
 /**
- * CONFIGURATIONS
+ * COMMAND LINE ARGUMENTS
  */
 const subdomain = process.argv[2] || 'music-radio'
 const port = +process.argv[3] || 8000
-const songlistPath = './songlist.json'
-const musicPlayer = new GoogleDriveMusicPlayer(songlistPath)
+const generateSonglist = process.argv.includes('reload')
 
+/**
+ * CONSTANTS
+ */
+const songlistPath = __dirname + '/songlist.json'
+const loaderDirectory = __dirname + '/lib/loaders'
 
-async function configure() {
-
-	await inquirer
-		.prompt([
-			{
-				type: 'list',
-				name: 'storagePlatform',
-				message: 'Which Storage Platform would you like to generate a songlist.json from?',
-				choices: ['google drive']
-			},
-		])
-		.then(answers => {
-		})
-}
+/**
+ * 	VARIABLES
+ */
+let songlist: Array<SongEntry>
+let musicPlayer: MusicPlayer
 
 /**
  * INIT FUNCTION
  */
-async function initializeServer() {
+async function initialize() {
+	/**
+	 * Initial Values
+	 */
+	songlist = JSON.parse(readFileSync(songlistPath, { encoding: 'utf-8' }))
+	musicPlayer = new MusicPlayer(songlist)
+
 	/**
 	 * Tracking Data
 	 */
@@ -62,7 +67,7 @@ async function initializeServer() {
 		console.log('[User Connected]', socket.id)
 		connectedClients.set(socket, socket.id)
 		io.emit(streamEvents.connectedUsersUpdate, Array.from(connectedClients.values()))
-		socket.emit(streamEvents.songListUpdate, musicPlayer.songs.map(song => song.name))
+		socket.emit(streamEvents.songListUpdate, songlist.map(song => song.name))
 		socket.emit(streamEvents.musicStateUpdate, musicPlayer.getState())
 		// update name when user changes
 		socket.on(streamEvents.nameUpdate, (name: string) => {
@@ -114,11 +119,30 @@ async function initializeServer() {
 }
 
 /**
- * CONFIGURE -> INIT -> RUN (ﾉ*ФωФ)ﾉ
+ * Check Songlist needs or wants to be generated,
+ * call down to loaders and then run the real start
  */
-// configure().then(() =>
-initializeServer().then(() =>
-	musicPlayer.playSong()
-)
-// )
+function start() {
+	if (!existsSync(songlistPath) || generateSonglist) {
+		inquirer.prompt([{
+			type: 'list',
+			name: 'storagePlatform',
+			message: 'Which Storage Platform would you like to generate a songlist.json from?',
+			choices: readdirSync(loaderDirectory, { withFileTypes: true }).filter(item => item.isDirectory()).map(dir => dir.name)
+		}]).then(async (answers) => {
+			// dynamically load modules defined in the loader directory
+			import(loaderDirectory + '/' + answers.storagePlatform + '/loader')
+				.then(Loader => Loader.saveToFile(songlistPath, _start))
+		})
+	} else {
+		_start()
+	}
 
+	// the real starter of the show \(￣︶￣*\))
+	async function _start() {
+		await initialize()
+		musicPlayer.playSong()
+	}
+}
+
+start() // ☜(ﾟヮﾟ☜)

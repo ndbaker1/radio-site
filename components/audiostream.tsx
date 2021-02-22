@@ -4,7 +4,7 @@ import { Component, createRef, RefObject } from "react"
 import io from 'socket.io-client'
 import streamEvents from "../lib/socket.events"
 
-import { MusicState } from "../adapters/music.adapter"
+import { MusicState } from "../lib/musicplayer"
 import ConnectedUserList from "./userlist"
 import TrackPlayer from "./trackplayer"
 
@@ -15,6 +15,7 @@ export default class AudioStream extends Component<unknown, SyncingStreamState> 
   private audioPlayerSource: RefObject<HTMLSourceElement> = createRef()
   private streamSocket!: SocketIOClient.Socket
   private firstload = true
+
   constructor(props: unknown) {
     super(props)
     this.state = new SyncingStreamState
