@@ -23,8 +23,8 @@ const generateSonglist = process.argv.includes('reload') // quick ability to rel
 /**
  * CONSTANTS
  */
-const songlistPath = __dirname + '/songlist.json'
-const loaderDirectory = __dirname + '/lib/loaders'
+const SONGLIST_PATH = __dirname + '/songlist.json'
+const LOADER_DIR_PATH = __dirname + '/lib/loaders'
 
 /**
  * INIT FUNCTION
@@ -33,7 +33,7 @@ async function initialize() {
 	/**
 	 * Initial Values
 	 */
-	const songlist: Array<SongEntry> = JSON.parse(readFileSync(songlistPath, { encoding: 'utf-8' }))
+	const songlist: Array<SongEntry> = JSON.parse(readFileSync(SONGLIST_PATH, { encoding: 'utf-8' }))
 	const musicPlayer = new MusicPlayer(songlist)
 	const connectedClients = new Map<Socket, string>()
 
@@ -115,16 +115,16 @@ async function initialize() {
  * call down to loaders and then run the real start
  */
 function start() {
-	if (!existsSync(songlistPath) || generateSonglist) {
+	if (!existsSync(SONGLIST_PATH) || generateSonglist) {
 		inquirer.prompt([{
 			type: 'list',
 			name: 'storagePlatform',
 			message: 'Which Storage Platform would you like to generate a songlist.json from?',
-			choices: readdirSync(loaderDirectory, { withFileTypes: true }).filter(item => item.isDirectory()).map(dir => dir.name)
+			choices: readdirSync(LOADER_DIR_PATH, { withFileTypes: true }).filter(item => item.isDirectory()).map(dir => dir.name)
 		}]).then(async (answers) => {
 			// dynamically load modules defined in the loader directory
-			import(loaderDirectory + '/' + answers.storagePlatform + '/loader')
-				.then(Loader => Loader.saveToFile(songlistPath, _start))
+			import(LOADER_DIR_PATH + '/' + answers.storagePlatform + '/loader')
+				.then(Loader => Loader.saveToFile(SONGLIST_PATH, _start))
 		})
 	} else {
 		_start()
