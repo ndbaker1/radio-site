@@ -1,6 +1,8 @@
 {
   "compilerOptions": {
     "strict": true,
+    "moduleResolution": "Node",
+    "module": "UMD",
     "target": "ESNext",
     "noImplicitAny": true,
     "preserveConstEnums": true,
@@ -10,6 +12,8 @@
     "esModuleInterop": true,
   },
   "include": [
-    "server.ts"
+    "server.ts",
+    "lib/**/*.ts",
+    "lib/**/*.js",
   ],
 }

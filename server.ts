@@ -121,7 +121,7 @@ function start() {
 			name: 'storagePlatform',
 			message: 'Which Storage Platform would you like to generate a songlist.json from?',
 			choices: readdirSync(LOADER_DIR_PATH, { withFileTypes: true }).filter(item => item.isDirectory()).map(dir => dir.name)
-		}]).then(async (answers) => {
+		}]).then(async (answers: { storagePlatform: string }) => {
 			// dynamically load modules defined in the loader directory
 			import(LOADER_DIR_PATH + '/' + answers.storagePlatform + '/loader')
 				.then(Loader => Loader.saveToFile(SONGLIST_PATH, _start))
