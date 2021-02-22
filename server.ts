@@ -18,7 +18,7 @@ import { existsSync, readdirSync, readFileSync } from 'fs'
  */
 const subdomain = process.argv[2] || 'music-radio'
 const port = +process.argv[3] || 8000
-const generateSonglist = process.argv.includes('reload')
+const generateSonglist = process.argv.includes('reload') // quick ability to reload songlist.json
 
 /**
  * CONSTANTS
@@ -27,24 +27,14 @@ const songlistPath = __dirname + '/songlist.json'
 const loaderDirectory = __dirname + '/lib/loaders'
 
 /**
- * 	VARIABLES
- */
-let songlist: Array<SongEntry>
-let musicPlayer: MusicPlayer
-
-/**
  * INIT FUNCTION
  */
 async function initialize() {
 	/**
 	 * Initial Values
 	 */
-	songlist = JSON.parse(readFileSync(songlistPath, { encoding: 'utf-8' }))
-	musicPlayer = new MusicPlayer(songlist)
-
-	/**
-	 * Tracking Data
-	 */
+	const songlist: Array<SongEntry> = JSON.parse(readFileSync(songlistPath, { encoding: 'utf-8' }))
+	const musicPlayer = new MusicPlayer(songlist)
 	const connectedClients = new Map<Socket, string>()
 
 	/**
@@ -116,6 +106,8 @@ async function initialize() {
 		console.log('Shutting down socket.io...')
 		io.close()
 	}
+
+	return musicPlayer
 }
 
 /**
@@ -139,9 +131,8 @@ function start() {
 	}
 
 	// the real starter of the show \(￣︶￣*\))
-	async function _start() {
-		await initialize()
-		musicPlayer.playSong()
+	function _start() {
+		initialize().then(musicPlayer => musicPlayer.playSong())
 	}
 }
 
