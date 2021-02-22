@@ -26,7 +26,7 @@ export function saveToFile(filePath: PathLike, callback: NoParamCallback) {
 			// cleanup the spinner
 			spinner.stop(true)
 			// write the song entries to a file and do callback
-			// log the error and do not call callback if empty songlist
+			// log the error and do not call callback if empty songlist	
 			if (songlistJSON.length > 0)
 				writeFile(filePath, JSON.stringify(songlistJSON, null, 2), callback)
 			else
@@ -37,7 +37,7 @@ export function saveToFile(filePath: PathLike, callback: NoParamCallback) {
 		 * Recursively search the folders synchronously with awaits
 		 * @param folderId folderId to search on Gdrive
 		 */
-		async function searchInFolderId(folderId: string) {
+		async function searchInFolderId(folderId: string, pathname?: string) {
 			const res = await drive.files.list({
 				pageSize: 1000,
 				q: `parents in '${folderId}'`,
@@ -46,10 +46,12 @@ export function saveToFile(filePath: PathLike, callback: NoParamCallback) {
 			if (res?.data?.files?.length) {
 				for (const schemaFile of res.data.files) {
 					const file = schemaFile as { name: string, id: string, mimeType: string }
+					const path = (pathname ? pathname + ' / ' : '')
 					if (['audio/mp3', 'audio/mpeg'].includes(file.mimeType))
-						songlistJSON.push({ name: file.name.substring(0, file.name.lastIndexOf('.')), url: `https://docs.google.com/uc?export=download&id=${file.id}` })
-					else if (file.mimeType === 'application/vnd.google-apps.folder')
-						await searchInFolderId(file.id)
+						songlistJSON.push({ name: path + file.name.substring(0, file.name.lastIndexOf('.')), url: `https://docs.google.com/uc?export=download&id=${file.id}` })
+					else if (file.mimeType === 'application/vnd.google-apps.folder') {
+						await searchInFolderId(file.id, path + file.name)
+					}
 					else
 						console.log(`mimeType: ${file.mimeType} not handled.`)
 				}
