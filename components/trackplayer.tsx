@@ -1,6 +1,8 @@
 import { Input, List, ListItem, Snackbar } from "@material-ui/core";
 import CloseIcon from '@material-ui/icons/Close';
 import { useState } from "react";
+import styleVariables from '../styles/variables.module.scss'
+
 
 export default function TrackPlayer(props: { songs: Array<string>, playTrackIndex: (index: number) => void }): JSX.Element {
   const [open, setOpen] = useState(false)
@@ -19,7 +21,7 @@ export default function TrackPlayer(props: { songs: Array<string>, playTrackInde
         open={open}
         anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
         message={
-          <div style={{ display: 'flex', flexDirection: 'column', maxHeight: 'calc(100vh - 76px)', width: 500, overflow: 'hidden' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', maxHeight: styleVariables.material_snackbar_maxHeight, width: 500, overflow: 'hidden' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
               <h2>Track List</h2>
               <CloseIcon onClick={() => setOpen(false)} style={{ cursor: 'pointer' }} />
